@@ -1,18 +1,23 @@
 let root = $('#root');
-let form = cElement('form');
-let input = cInputField("Enter Form Title: ", "text");
+let div = cElement('div');
+let input = cInputField("Enter Form Title: ", "text", 'title');
 let select = cSelect("control-drop-down", "Select Control", ['Input', 'Date']);
+let generatedControl = { controls: [] };
+
+generatedControl['title'] = "";
+
 let button = cButton("generate-btn", "Generate Controls", null, (button) => {
+
     button.addEventListener('click', () => {
         let type = $("#control-drop-down").value;
-        console.log(type);
         let formControl = controlFactory(type);
-        console.log(formControl);
-        form.appendChild(formControl);
+        div.appendChild(formControl);
     });
+
 });
-form.appendChild(input);
-root.appendChild(form);
+
+div.appendChild(input);
+root.appendChild(div);
 
 let controlWrapper = cElement('div');
 controlWrapper.appendChild(select);
@@ -31,7 +36,7 @@ function cButton(id, buttonName, clazz, callback) {
     return button;
 }
 
-function cInputField(labelName, inputType) {
+function cInputField(labelName, inputType, name) {
 
     let formGroup = cElement('div');
 
@@ -40,6 +45,7 @@ function cInputField(labelName, inputType) {
 
     let input = cElement('input');
     input.type = inputType;
+    input.name = name;
 
     formGroup.appendChild(label);
     formGroup.appendChild(input);
@@ -51,10 +57,19 @@ function controlFactory(type) {
     let fieldset = cElement('fieldset');
     let legend = cElement('legend');
     let control = null;
-
+    let controlObject = {};
     if (type === "Input") {
         control = inputFieldBuilder();
-        legend.innerText = "Input Form Control"
+        legend.innerText = "Input Form Control";
+        controlObject['control'] = "input";
+        let inputs = getTagFrom(control, "input");
+
+        Array.from(inputs).forEach((element) => {
+            controlObject[element.name] = element.value;
+        });
+
+        generatedControl.controls = [...generatedControl.controls, controlObject]
+        console.log(generatedControl);
     }
 
     let removeControlBtn = cButton(null, "Remove", null, (button) => {
@@ -71,10 +86,12 @@ function controlFactory(type) {
 
 function inputFieldBuilder() {
     let inputFieldFormControl = cElement('div');
-    let inputField = cInputField("Enter your label name: ", 'text');
-    let inputFieldPlaceHolder = cInputField("Enter your placeholder value: ", 'text');
+    let inputField = cInputField("Enter your label name: ", 'text', 'label');
+    let inputFieldType = cInputField("Enter your type: ", 'text', 'type');
+    let inputFieldPlaceHolder = cInputField("Enter your placeholder value: ", 'text', 'placeholder');
 
     inputFieldFormControl.appendChild(inputField)
+    inputFieldFormControl.appendChild(inputFieldType)
     inputFieldFormControl.appendChild(inputFieldPlaceHolder)
     return inputFieldFormControl;
 }
@@ -112,6 +129,10 @@ function cElement(element) {
 
 function $(selector) {
     return document.querySelector(selector)
+}
+
+function getTagFrom(parent, tagType) {
+    return parent.getElementsByTagName(tagType)
 }
 
 
